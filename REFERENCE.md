@@ -6,6 +6,10 @@
 
 ### Functions
 
+* [`extlib::aws::rds::db_instances`](#extlib--aws--rds--db_instances): Wraps Amazon RDS DescribeDBInstances to return detailed information on one or all RDS database instances.
+* [`extlib::aws::rds_master_secret`](#extlib--aws--rds_master_secret): Convenience wrapper function for retrieving the AWS managed master secret of an RDS database instance.
+* [`extlib::aws::region`](#extlib--aws--region): Returns the AWS region of the host running this function, read from its EC2 instance metadata (IMDS).
+* [`extlib::aws::secretsmanager::secret_value`](#extlib--aws--secretsmanager--secret_value): Retrieves and parses an AWS Secrets Manager secret
 * [`extlib::cache_data`](#extlib--cache_data): Retrieves data from a cache file, or creates it with supplied data if the file doesn't exist
 * [`extlib::cidr_to_netmask`](#extlib--cidr_to_netmask): Converts an CIDR address of the form 192.168.0.1/24 into its netmask.
 * [`extlib::cidr_to_network`](#extlib--cidr_to_network): Converts a CIDR address of the form 2001:DB8::/32 or 192.0.2.0/24 into their network address (also known as net address)
@@ -43,6 +47,120 @@ Based on https://github.com/mmckinst/puppet-hash2stuff/blob/master/lib/puppet/pa
 * [`extlib::version_latest_github`](#extlib--version_latest_github): Retrieves the latest release tag for a GitHub project
 
 ## Functions
+
+### <a name="extlib--aws--rds--db_instances"></a>`extlib::aws::rds::db_instances`
+
+Type: Ruby 4.x API
+
+This function queries the Amazon RDS API to retrieve information on RDS
+database instances.
+
+Currently, it only supports querying the instances using the IAM role
+permissions of the EC2 instance running the function, (usually your
+puppetserver unless the function call is `Deferred`), and it only supports
+querying the instances in the same account as it is being run.
+
+#### `extlib::aws::rds::db_instances(Optional[String[1]] $db_instance_identifier, Optional[Variant[Undef, String[1]]] $region)`
+
+This function queries the Amazon RDS API to retrieve information on RDS
+database instances.
+
+Currently, it only supports querying the instances using the IAM role
+permissions of the EC2 instance running the function, (usually your
+puppetserver unless the function call is `Deferred`), and it only supports
+querying the instances in the same account as it is being run.
+
+Returns: `Variant[Array[Hash],Hash]` Returns a hash containing the DB instance data, or an Array of such hashes if the `db_instance_identifier` parameter was not specified.
+
+##### `db_instance_identifier`
+
+Data type: `Optional[String[1]]`
+
+The RDS instance identifier or ARN of the DB instance. If omitted, returns an Array containing details of _all_ instances.
+
+##### `region`
+
+Data type: `Optional[Variant[Undef, String[1]]]`
+
+The AWS region as used when creating the API client. If omitted (or explicitly passed `undef`), the region will be automatically looked up from the metadata of the EC2 instance running the function.
+
+### <a name="extlib--aws--rds_master_secret"></a>`extlib::aws::rds_master_secret`
+
+Type: Puppet Language
+
+Convenience wrapper function for retrieving the AWS managed master secret of an RDS database instance.
+
+#### `extlib::aws::rds_master_secret(String[1] $db_instance_identifier, Optional[String[1]] $region = undef)`
+
+The extlib::aws::rds_master_secret function.
+
+Returns: `Hash` The DB instance master secret hash, containing details such as the `username` and `password` depending on RDS instance type.
+
+##### `db_instance_identifier`
+
+Data type: `String[1]`
+
+The RDS instance identifier or ARN
+
+##### `region`
+
+Data type: `Optional[String[1]]`
+
+Optionally specify your AWS region. If not given, the `extlib::aws::region` function will be used to fetch the region.
+
+### <a name="extlib--aws--region"></a>`extlib::aws::region`
+
+Type: Ruby 4.x API
+
+This function is primarily intended to be used internally by other
+`extlib::aws` functions. It takes no parameters but depends on the EC2
+Instance metadata service (IMDS) being `enabled`, (ie on your EC2 based
+puppetserver or your agent if run as a `Deferred` function.)
+
+#### `extlib::aws::region()`
+
+This function is primarily intended to be used internally by other
+`extlib::aws` functions. It takes no parameters but depends on the EC2
+Instance metadata service (IMDS) being `enabled`, (ie on your EC2 based
+puppetserver or your agent if run as a `Deferred` function.)
+
+Returns: `String[1]` Returns an AWS region.
+
+### <a name="extlib--aws--secretsmanager--secret_value"></a>`extlib::aws::secretsmanager::secret_value`
+
+Type: Ruby 4.x API
+
+This function queries the Amazon SecretsManager API to retrieve a secret
+based on the ARN provided.
+
+Currently, it only supports querying the instances using the IAM role
+permissions of the EC2 instance running the function, (usually your
+puppetserver unless the function call is `Deferred`), and it only supports
+fetching secrets from the same account as the function is being run.
+
+#### `extlib::aws::secretsmanager::secret_value(String[1] $secret_arn, Optional[Variant[Undef, String[1]]] $region)`
+
+This function queries the Amazon SecretsManager API to retrieve a secret
+based on the ARN provided.
+
+Currently, it only supports querying the instances using the IAM role
+permissions of the EC2 instance running the function, (usually your
+puppetserver unless the function call is `Deferred`), and it only supports
+fetching secrets from the same account as the function is being run.
+
+Returns: `Variant[Sensitive[String[1]], Hash, Sensitive[Hash]]` Returns the secret. For plain text secrets, the function will return a `Sensitive[String]`. For key:value secrets, the secret JSON will be decoded. If the secret contains a `password` field, this will be returned as a `Sensitive[String]` within the `Hash` returned. If there isn't a `password` field, the complete hash will be returned wrapped in `Sensitive`.
+
+##### `secret_arn`
+
+Data type: `String[1]`
+
+The ARN of the secret to fetch.
+
+##### `region`
+
+Data type: `Optional[Variant[Undef, String[1]]]`
+
+The AWS region as used when creating the API client. If omitted (or explicitly passed `undef`), the region will be automatically looked up from the metadata of the EC2 instance running the function.
 
 ### <a name="extlib--cache_data"></a>`extlib::cache_data`
 
