@@ -63,6 +63,65 @@ The following sections/settings are included.
 }
 ```
 
+### Templates
+
+The module provides general-purpose EPP templates for serializing to common configuration file formats. They rely on `puppetlabs/stdlib` for serialization.
+
+#### Sensitive values
+
+The templates accept data structures that contain `Sensitive` values. The generated file content will include the unwrapped values.
+
+If you want to ensure Puppet does not log the resulting diff, it is recommended to wrap the whole `epp()` call in `Sensitive()`:
+
+```puppet
+file { '/etc/myapp/config.yaml':
+  ensure  => file,
+  content => Sensitive(epp('extlib/yaml.epp', { 'data' => $data })),
+}
+```
+
+#### `extlib/json.epp`
+
+Render a hash as JSON. The optional `pretty` parameter defaults to `false`.
+
+```puppet
+file { '/etc/myapp/config.json':
+  ensure  => file,
+  content => epp('extlib/json.epp', {
+    'data'   => { 'key' => 'value', 'count' => 42 },
+    'pretty' => true,
+  }),
+}
+```
+
+#### `extlib/toml.epp`
+
+Render a hash as TOML. `stdlib::to_toml` sorts keys and sections where order is not semantically meaningful and handles arrays and arrays of tables per the TOML spec. The optional `comments` parameter accepts a single string or an array of strings and is printed as comment lines below the default header.
+
+```puppet
+file { '/etc/myapp/config.toml':
+  ensure  => file,
+  content => epp('extlib/toml.epp', {
+    'data'     => { 'section' => { 'key' => 'value' } },
+    'comments' => ['Contact USERNAME', 'Do not edit manually'],
+  }),
+}
+```
+
+#### `extlib/yaml.epp`
+
+Render a scalar, array, or hash as plain YAML. The output uses a single leading `---` document marker. The optional `comments` parameter accepts a single string or an array of strings.
+
+```puppet
+file { '/etc/myapp/config.yaml':
+  ensure  => file,
+  content => epp('extlib/yaml.epp', {
+    'data'     => { 'key' => 'value' },
+    'comments' => 'Managed by Puppet',
+  }),
+}
+```
+
 ## Limitations
 
 Some functions require puppetlabs-stdlib (>= 4.6.0) and all functions are only

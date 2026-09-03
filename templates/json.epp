@@ -1,0 +1,9 @@
+<%- |
+  Hash $data,
+  Boolean $pretty = false,
+| -%>
+<% if $pretty { -%>
+<%= unwrap(stdlib::to_json_pretty($data)) -%>
+<% } else { -%>
+<%= unwrap(stdlib::to_json($data)) %>
+<% } -%>
