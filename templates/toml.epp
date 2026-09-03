@@ -1,0 +1,20 @@
+<%- |
+  Hash $data,
+  Optional[Variant[String, Array[String]]] $comments = undef,
+| -%>
+<%- if $comments =~ String {
+  $comment_lines = [$comments]
+} elsif $comments =~ Array {
+  $comment_lines = $comments
+} else {
+  $comment_lines = undef
+} -%>
+# This file is managed with puppet
+<% if $comment_lines { -%>
+#
+<% $comment_lines.each |$msg| { -%>
+# <%= $msg %>
+<% } -%>
+<% } -%>
+#
+<%= unwrap(stdlib::to_toml($data)) -%>
